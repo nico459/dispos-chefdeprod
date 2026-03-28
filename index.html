@@ -219,7 +219,7 @@
         // ============================================================
         // Calcul automatique des dates de la semaine courante
         // ============================================================
-        const JOURS = ['Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi'];
+        const JOURS = ['Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Samedi', 'Dimanche'];
 
         function getWeekDates() {
             const now = new Date();
@@ -229,7 +229,7 @@
             monday.setDate(now.getDate() + diffToMonday);
 
             const dates = [];
-            for (let i = 0; i < 5; i++) {
+            for (let i = 0; i < 7; i++) {
                 const d = new Date(monday);
                 d.setDate(monday.getDate() + i);
                 dates.push(d);
@@ -250,10 +250,10 @@
         // ============================================================
         const weekDates = getWeekDates();
         const mondayISO = formatISO(weekDates[0]);
-        const fridayISO = formatISO(weekDates[4]);
+        const sundayISO = formatISO(weekDates[6]);
 
         document.getElementById('weekBanner').textContent =
-            `Semaine du ${formatDate(weekDates[0])} au ${formatDate(weekDates[4])}`;
+            `Semaine du ${formatDate(weekDates[0])} au ${formatDate(weekDates[6])}`;
 
         const tbody = document.getElementById('dispoBody');
         weekDates.forEach((date, i) => {
@@ -293,7 +293,7 @@
                 ? dispoLines.join('\n')
                 : 'Aucune disponibilité cochée';
 
-            const semaineLabel = `${formatDate(weekDates[0])} – ${formatDate(weekDates[4])}`;
+            const semaineLabel = `${formatDate(weekDates[0])} – ${formatDate(weekDates[6])}`;
 
             // Payload Notion
             const payload = {
@@ -303,7 +303,7 @@
                         title: [{ text: { content: nom } }]
                     },
                     "Semaine": {
-                        date: { start: mondayISO, end: fridayISO }
+                        date: { start: mondayISO, end: sundayISO }
                     },
                     "Disponibilités": {
                         rich_text: [{ text: { content: dispoText } }]

@@ -217,16 +217,24 @@
         const PROXY_URL     = "https://notion-proxy.nic-delgaudio.workers.dev";
 
         // ============================================================
-        // Calcul automatique des dates de la semaine courante
+        // Calcul automatique des dates de la semaine
+        // À partir de mercredi, on affiche la semaine SUIVANTE
+        // pour laisser un préavis suffisant.
         // ============================================================
         const JOURS = ['Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Samedi', 'Dimanche'];
 
         function getWeekDates() {
             const now = new Date();
-            const day = now.getDay();
+            const day = now.getDay(); // 0=Dim, 1=Lun, ... 6=Sam
             const diffToMonday = (day === 0 ? -6 : 1) - day;
             const monday = new Date(now);
             monday.setDate(now.getDate() + diffToMonday);
+
+            // À partir de mercredi (jour 3+), basculer sur la semaine suivante
+            const jourSemaine = day === 0 ? 7 : day; // 1=Lun, 2=Mar, 3=Mer, ..., 7=Dim
+            if (jourSemaine >= 3) {
+                monday.setDate(monday.getDate() + 7);
+            }
 
             const dates = [];
             for (let i = 0; i < 7; i++) {

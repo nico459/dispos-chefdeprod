@@ -289,57 +289,70 @@
             const nom = document.getElementById('nom').value.trim();
             const notes = document.getElementById('notes').value.trim();
 
-            // Construire le résumé des disponibilités
+            // Regrouper les disponibilités par jour
+            const daySlots = {};
             const checkboxes = document.querySelectorAll('.dispo-table input[type="checkbox"]');
-            const dispoLines = [];
             checkboxes.forEach(cb => {
                 if (cb.checked) {
-                    dispoLines.push(`${cb.dataset.day} — ${cb.dataset.slot}`);
+                    const dayIdx = parseInt(cb.id.substring(1));
+                    if (!daySlots[dayIdx]) daySlots[dayIdx] = [];
+                    daySlots[dayIdx].push(cb.dataset.slot);
                 }
             });
-            const dispoText = dispoLines.length > 0
-                ? dispoLines.join('\n')
-                : 'Aucune disponibilité cochée';
 
-            const semaineLabel = `${formatDate(weekDates[0])} – ${formatDate(weekDates[6])}`;
-
-            // Payload Notion
-            const payload = {
-                parent: { database_id: NOTION_DB_ID },
-                properties: {
-                    "Nom prénom": {
-                        title: [{ text: { content: nom } }]
-                    },
-                    "indispo": {
-                        date: { start: mondayISO, end: sundayISO }
-                    },
-                    "nom": {
-                        rich_text: [{ text: { content: dispoText } }]
-                    },
-                    "Étiquettes": {
-                        multi_select: [{ name: "Reçu" }]
-                    }
-                }
-            };
+            const dayKeys = Object.keys(daySlots);
+            if (dayKeys.length === 0) {
+                statusEl.textContent = 'Veuillez cocher au moins une disponibilité.';
+                statusEl.className = 'status-msg error';
+                statusEl.style.display = '';
+                btn.disabled = false;
+                btn.textContent = 'Envoyer mes disponibilités';
+                return;
+            }
 
             try {
-                const res = await fetch(PROXY_URL, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ payload })
-                });
-                const data = await res.json();
+                let successCount = 0;
+                for (const dayIdx of dayKeys) {
+                    const slots = daySlots[dayIdx];
+                    const slotLabel = slots.length === 2 ? 'Journée'
+                        : slots.includes('Matin') ? 'Matin' : 'Après-midi';
+                    const dateISO = formatISO(weekDates[parseInt(dayIdx)]);
 
-                if (data.id) {
-                    statusEl.textContent = '✓ Disponibilités envoyées avec succès !';
-                    statusEl.className = 'status-msg success';
-                    document.getElementById('dispoForm').reset();
-                } else {
-                    throw new Error(data.message || 'Erreur Notion');
+                    const payload = {
+                        parent: { database_id: NOTION_DB_ID },
+                        properties: {
+                            "Nom prénom": {
+                                title: [{ text: { content: nom + ' — ' + slotLabel } }]
+                            },
+                            "indispo": {
+                                date: { start: dateISO }
+                            },
+                            "nom": {
+                                rich_text: [{ text: { content: notes || '' } }]
+                            },
+                            "Étiquettes": {
+                                multi_select: [{ name: "Reçu" }]
+                            }
+                        }
+                    };
+
+                    const res = await fetch(PROXY_URL, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ payload })
+                    });
+                    const data = await res.json();
+                    if (data.id) successCount++;
+                    else throw new Error(data.message || 'Erreur Notion');
                 }
+                statusEl.textContent = '✓ ' + successCount + ' disponibilité(s) envoyée(s) avec succès !';
+                statusEl.className = 'status-msg success';
+                statusEl.style.display = '';
+                document.getElementById('dispoForm').reset();
             } catch (err) {
                 statusEl.textContent = '✗ Erreur : ' + err.message;
                 statusEl.className = 'status-msg error';
+                statusEl.style.display = '';
             } finally {
                 btn.disabled = false;
                 btn.textContent = 'Envoyer mes disponibilités';

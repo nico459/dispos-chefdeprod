@@ -212,7 +212,7 @@
         // ============================================================
         // CONFIGURATION — Remplacer par vos valeurs
         // ============================================================
-        const NOTION_TOKEN  = "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";
+        // Token Notion stocke dans Cloudflare Worker (env.NOTION_TOKEN)
         const NOTION_DB_ID  = "331ca3806fac8013a36de05090507279";
         const PROXY_URL     = "https://notion-proxy.nic-delgaudio.workers.dev";
 
@@ -329,7 +329,7 @@
                 const res = await fetch(PROXY_URL, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ token: NOTION_TOKEN, payload })
+                    body: JSON.stringify({ payload })
                 });
                 const data = await res.json();
 

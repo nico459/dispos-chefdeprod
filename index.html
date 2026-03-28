@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Disponibilités — Creative Crafters</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        .container {
+            background: #fff;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            max-width: 700px;
+            width: 100%;
+            overflow: hidden;
+        }
+        .header {
+            background: linear-gradient(135deg, #e94560 0%, #c23152 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+        .header h1 {
+            font-size: 1.8rem;
+            font-weight: 700;
+            margin-bottom: 5px;
+        }
+        .header .subtitle {
+            font-size: 0.95rem;
+            opacity: 0.9;
+        }
+        .week-banner {
+            background: #0f3460;
+            color: #e94560;
+            text-align: center;
+            padding: 12px;
+            font-weight: 700;
+            font-size: 1.05rem;
+            letter-spacing: 0.5px;
+        }
+        .form-body {
+            padding: 30px;
+        }
+        .field-group {
+            margin-bottom: 22px;
+        }
+        label {
+            display: block;
+            font-weight: 600;
+            color: #1a1a2e;
+            margin-bottom: 6px;
+            font-size: 0.95rem;
+        }
+        input[type="text"], textarea {
+            width: 100%;
+            padding: 12px 14px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            font-size: 1rem;
+            transition: border-color 0.2s;
+            font-family: inherit;
+        }
+        input[type="text"]:focus, textarea:focus {
+            outline: none;
+            border-color: #e94560;
+        }
+        textarea { resize: vertical; min-height: 80px; }
+        .dispo-table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0;
+            border-radius: 12px;
+            overflow: hidden;
+            border: 2px solid #e0e0e0;
+            margin-top: 6px;
+        }
+        .dispo-table th {
+            background: #0f3460;
+            color: white;
+            padding: 10px 8px;
+            font-size: 0.85rem;
+            font-weight: 600;
+        }
+        .dispo-table td {
+            padding: 10px 8px;
+            text-align: center;
+            border-top: 1px solid #eee;
+            font-size: 0.9rem;
+        }
+        .dispo-table tr:nth-child(even) td { background: #f8f9fa; }
+        .day-label {
+            font-weight: 600;
+            color: #1a1a2e;
+            text-align: left;
+            padding-left: 14px !important;
+            min-width: 140px;
+        }
+        .dispo-table input[type="checkbox"] {
+            width: 20px;
+            height: 20px;
+            accent-color: #e94560;
+            cursor: pointer;
+        }
+        .btn-submit {
+            display: block;
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(135deg, #e94560 0%, #c23152 100%);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 1.1rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: transform 0.15s, box-shadow 0.15s;
+            margin-top: 10px;
+        }
+        .btn-submit:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(233,69,96,0.4);
+        }
+        .btn-submit:active { transform: translateY(0); }
+        .btn-submit:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+        .status-msg {
+            text-align: center;
+            margin-top: 15px;
+            padding: 12px;
+            border-radius: 10px;
+            font-weight: 600;
+            display: none;
+        }
+        .status-msg.success {
+            display: block;
+            background: #d4edda;
+            color: #155724;
+        }
+        .status-msg.error {
+            display: block;
+            background: #f8d7da;
+            color: #721c24;
+        }
+        .footer {
+            text-align: center;
+            padding: 15px;
+            color: #999;
+            font-size: 0.8rem;
+            border-top: 1px solid #eee;
+        }
+        @media (max-width: 500px) {
+            .header h1 { font-size: 1.4rem; }
+            .form-body { padding: 20px 15px; }
+            .dispo-table th, .dispo-table td { padding: 8px 4px; font-size: 0.8rem; }
+            .day-label { min-width: 100px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Creative Crafters</h1>
+            <div class="subtitle">Formulaire de disponibilités hebdomadaires</div>
+        </div>
+        <div class="week-banner" id="weekBanner">Semaine du ...</div>
+        <div class="form-body">
+            <form id="dispoForm">
+                <div class="field-group">
+                    <label for="nom">Votre nom</label>
+                    <input type="text" id="nom" placeholder="Prénom Nom" required>
+                </div>
+
+                <div class="field-group">
+                    <label>Vos disponibilités</label>
+                    <table class="dispo-table">
+                        <thead>
+                            <tr>
+                                <th>Jour</th>
+                                <th>Matin</th>
+                                <th>Après-midi</th>
+                            </tr>
+                        </thead>
+                        <tbody id="dispoBody"></tbody>
+                    </table>
+                </div>
+
+                <div class="field-group">
+                    <label for="notes">Notes (optionnel)</label>
+                    <textarea id="notes" placeholder="Précisions, contraintes particulières..."></textarea>
+                </div>
+
+                <button type="submit" class="btn-submit" id="submitBtn">Envoyer mes disponibilités</button>
+                <div id="statusMsg" class="status-msg"></div>
+            </form>
+        </div>
+        <div class="footer">Creative Crafters &copy; 2026 — Outil interne</div>
+    </div>
+
+    <script>
+        // ============================================================
+        // CONFIGURATION — Remplacer par vos valeurs
+        // ============================================================
+        const NOTION_TOKEN  = "REMPLACE_PAR_TON_NOTION_TOKEN";
+        const NOTION_DB_ID  = "REMPLACE_PAR_TON_DATABASE_ID";
+        const PROXY_URL     = "https://notion-proxy.ton-domaine.workers.dev";
+
+        // ============================================================
+        // Calcul automatique des dates de la semaine courante
+        // ============================================================
+        const JOURS = ['Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi'];
+
+        function getWeekDates() {
+            const now = new Date();
+            const day = now.getDay();
+            const diffToMonday = (day === 0 ? -6 : 1) - day;
+            const monday = new Date(now);
+            monday.setDate(now.getDate() + diffToMonday);
+
+            const dates = [];
+            for (let i = 0; i < 5; i++) {
+                const d = new Date(monday);
+                d.setDate(monday.getDate() + i);
+                dates.push(d);
+            }
+            return dates;
+        }
+
+        function formatDate(d) {
+            return d.toLocaleDateString('fr-FR', { day: 'numeric', month: 'long' });
+        }
+
+        function formatISO(d) {
+            return d.toISOString().split('T')[0];
+        }
+
+        // ============================================================
+        // Génération dynamique du tableau
+        // ============================================================
+        const weekDates = getWeekDates();
+        const mondayISO = formatISO(weekDates[0]);
+        const fridayISO = formatISO(weekDates[4]);
+
+        document.getElementById('weekBanner').textContent =
+            `Semaine du ${formatDate(weekDates[0])} au ${formatDate(weekDates[4])}`;
+
+        const tbody = document.getElementById('dispoBody');
+        weekDates.forEach((date, i) => {
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td class="day-label">${JOURS[i]} ${formatDate(date)}</td>
+                <td><input type="checkbox" id="m${i}" data-day="${JOURS[i]}" data-slot="Matin"></td>
+                <td><input type="checkbox" id="a${i}" data-day="${JOURS[i]}" data-slot="Après-midi"></td>
+            `;
+            tbody.appendChild(tr);
+        });
+
+        // ============================================================
+        // Soumission vers Notion via le proxy Cloudflare
+        // ============================================================
+        document.getElementById('dispoForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const btn = document.getElementById('submitBtn');
+            const statusEl = document.getElementById('statusMsg');
+            btn.disabled = true;
+            btn.textContent = 'Envoi en cours...';
+            statusEl.className = 'status-msg';
+            statusEl.style.display = 'none';
+
+            const nom = document.getElementById('nom').value.trim();
+            const notes = document.getElementById('notes').value.trim();
+
+            // Construire le résumé des disponibilités
+            const checkboxes = document.querySelectorAll('.dispo-table input[type="checkbox"]');
+            const dispoLines = [];
+            checkboxes.forEach(cb => {
+                if (cb.checked) {
+                    dispoLines.push(`${cb.dataset.day} — ${cb.dataset.slot}`);
+                }
+            });
+            const dispoText = dispoLines.length > 0
+                ? dispoLines.join('\n')
+                : 'Aucune disponibilité cochée';
+
+            const semaineLabel = `${formatDate(weekDates[0])} – ${formatDate(weekDates[4])}`;
+
+            // Payload Notion
+            const payload = {
+                parent: { database_id: NOTION_DB_ID },
+                properties: {
+                    "Nom": {
+                        title: [{ text: { content: nom } }]
+                    },
+                    "Semaine": {
+                        date: { start: mondayISO, end: fridayISO }
+                    },
+                    "Disponibilités": {
+                        rich_text: [{ text: { content: dispoText } }]
+                    },
+                    "Notes": {
+                        rich_text: [{ text: { content: notes || '—' } }]
+                    },
+                    "Statut": {
+                        select: { name: "Reçu" }
+                    }
+                }
+            };
+
+            try {
+                const res = await fetch(PROXY_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ token: NOTION_TOKEN, payload })
+                });
+                const data = await res.json();
+
+                if (data.id) {
+                    statusEl.textContent = '✓ Disponibilités envoyées avec succès !';
+                    statusEl.className = 'status-msg success';
+                    document.getElementById('dispoForm').reset();
+                } else {
+                    throw new Error(data.message || 'Erreur Notion');
+                }
+            } catch (err) {
+                statusEl.textContent = '✗ Erreur : ' + err.message;
+                statusEl.className = 'status-msg error';
+            } finally {
+                btn.disabled = false;
+                btn.textContent = 'Envoyer mes disponibilités';
+            }
+        });
+    </script>
+</body>
+</html>
